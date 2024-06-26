@@ -1,84 +1,85 @@
-import inquirer from "inquirer"
+#! /usr/bin/env node
 
-class Player{
-    name:string;
-    fuel:number=100;
-    constructor(name:string){
-        this.name=name;
-    }
-    fuelDecreases(){
-        let fuel=this.fuel-25
-        this.fuel=fuel;
-    }
-    fuelIncrease(){
-        this.fuel=100
-    }
+import inquirer from "inquirer";
+import chalk from "chalk";
+
+let playerPoints = 100;
+
+let opponentPoints = 100;
+
+function decreasePoints(entity: string) {
+  if (entity === "player") {
+    playerPoints -= 20;
+  } else {
+    opponentPoints -= 20;
+  }
 }
-class Opponent{
-    name:string;
-    fuel:number=100;
-    constructor(name:string){
-        this.name=name;
+function refillPoints() {
+  playerPoints = 100;
+}
+async function startGame() {
+  const player = await inquirer.prompt([
+    {
+      name: "name",
+      type: "input",
+      message: chalk.cyan("\tENTER YOUR NAME:\n"),
+    },
+  ]);
+  const opponent = await inquirer.prompt([
+    {
+      name: "select",
+      type: "list",
+      message: chalk.cyan("\tSELECT YCUR OPPONENT\n"),
+      choices: ["SKELETON", "MONSTER", "ZOMBIE"],
+    },
+  ]);
+
+  console.log(chalk.magenta(`THE BATTLE BEGINS ${player.name} VS ${opponent.select}`));
+
+  while (true) {
+    const answer = await inquirer.prompt([
+      {
+        name: "opt",
+        type: "list",
+        message: chalk.cyan("\tSelect your option\n"),
+        choices: ["Attack", "Drink potian", "Run for your dear life"],
+      },
+    ]);
+    if (answer.opt === "Attack") {
+      const num = Math.floor(Math.random() * 2);
+      if (num > 0) {
+        decreasePoints("player");
+        console.log(`${player.name} Points is ${playerPoints}`);
+
+        console.log(`Opponent's Points is ${opponentPoints}`);
+        if (playerPoints <= 0) {
+          console.log(chalk.red("YOU LOSE, BETTER LUCK NEXT TINE"));
+          process.exit();
+        }
+      } else {
+        decreasePoints("opponent");
+
+        console.log(`${player.name} Points is ${playerPoints}`);
+        
+        console.log(`Opponent's Points is ${opponentPoints}`);
+
+        if (opponentPoints <= 0) {
+          console.log(chalk.yellow("YOU WIN!"));
+
+          process.exit();
+        }
+      }
+    } else if (answer.opt === "Drink potion") {
+      refillPoints();
+      console.log(
+        chalk.green(`${player.name} drink a potion. Your Points is ${playerPoints}`)
+      );
+    } else if (answer.opt === "Run tor your dear life") {
+      console.log(chalk.red("YOU LOSE, BETTER LUCK NEXT TIME"));
+      process.exit();
     }
-    fuelDecreases(){
-        let fuel=this.fuel-25
-        this.fuel=fuel;
-    }
+  }
 }
 
+startGame();
 
-let player=await inquirer.prompt([
-    {
-        name:"name",
-        type:"input",
-        message:"Please Enter Your Name"
-    }
-])
-
-let opponent=await inquirer.prompt([
-    {
-        name:"select",
-        type:"list",
-        choices:["Skeleton","Alien","Zombie"],
-        message:"Select Your Opponent"
-    }
-])
-
-let p1=new Player(player.name)
-let o1=new Opponent(opponent.name)
-
-do{
-    if(opponent.select=="Skeleton"){
-        let ask=await inquirer.prompt([
-            {
-                name:"opt",
-                type:"list",
-                message:"What Would You Like To Do?",
-                choices:["Attack","Drink portion","Run For Your Life.. "]
-            }
-        ])
-        if(ask.opt=="Attack"){
-            let num=Math.floor(Math.random()*2)
-            if(num>0){
-                p1.fuelDecreases()
-                console.log(`${p1.name} fuel is ${p1.fuel}`);
-                console.log(`${o1.name} fuel is ${o1.fuel}`);
-
-                
-            }
-            if(num<=0){
-                o1.fuelDecreases()
-                console.log(`${p1.name} fuel is ${p1.fuel}`);
-                console.log(`${o1.name} fuel is ${o1.fuel}`);  
-            }
-        }
-        if(ask.opt=="Drink portion"){
-          p1.fuelIncrease()
-            console.log(`You Drink Health Portion Your Fuel Is ${p1.fuel} `);
-            
-          }
-        }
-    
-    }
-
-while(true)
